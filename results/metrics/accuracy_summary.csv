@@ -1,5 +1,9 @@
-Method,Baseline,BrainOmni-tiny,BrainOmni-base
-GB 5-fold,0.824,0.811,0.818
-GB 80/10/10,0.6,0.8,0.8
-LR 5-fold,0.872,0.831,0.831
-LR 80/10/10,0.8,0.867,0.8
+,5-Fold CV,5-Fold CV,5-Fold CV,80/10/10,80/10/10,80/10/10
+Features,Baseline,BrainOmni-base,BrainOmni-tiny,Baseline,BrainOmni-base,BrainOmni-tiny
+Classifier,,,,,,
+Gradient Boosting,0.824,0.804,0.811,0.6,0.8,0.733
+KNN,0.811,0.777,0.777,0.6,0.8,0.8
+LightGBM,0.838,0.75,0.791,0.533,0.8,0.733
+Logistic Regression,0.872,0.831,0.831,0.8,0.8,0.867
+Random Forest,0.845,0.777,0.818,0.6,0.733,0.8
+XGBoost,0.791,0.804,0.797,0.467,0.733,0.733
