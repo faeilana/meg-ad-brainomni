@@ -1,0 +1,14 @@
+# All data — raw MEG/MRI, extracted features, Excel files
+data/
+
+# Conda environment
+brainomni_env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store

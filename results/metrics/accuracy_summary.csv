@@ -1,0 +1,5 @@
+Method,Baseline,BrainOmni-tiny,BrainOmni-base
+GB 5-fold,0.824,0.811,0.818
+GB 80/10/10,0.6,0.8,0.8
+LR 5-fold,0.872,0.831,0.831
+LR 80/10/10,0.8,0.867,0.8
