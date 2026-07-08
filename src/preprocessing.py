@@ -11,16 +11,23 @@ SEGMENT_SECS = 30
 def preprocess_subject(mat_path):
     data = scipy.io.loadmat(mat_path)
 
+    # signal: brain activity recorded by each sensor over time, resampled from 600 Hz to 256 Hz.
     signal = data['trial'][0, 0].astype(np.float32)
     signal = scipy.signal.resample_poly(signal, up=32, down=75, axis=1).astype(np.float32)
 
+    # grad: hardware description of the MEG helmet — where every sensor sits and which direction it faces.
     grad = data['grad']
+
+    # grad_labels: all sensor names on the helmet (including unused ones).
+    # meg_labels: sensor names actually used for this subject.
+    # idx aligns the two lists so positions match the right channels.
     grad_labels = [str(grad[0,0]['label'][i, 0][0]) for i in range(grad[0,0]['label'].shape[0])]
     meg_labels  = [str(data['label'][i, 0][0]) for i in range(data['label'].shape[0])]
     idx = [grad_labels.index(lbl) for lbl in meg_labels]
 
     chanpos = grad[0,0]['chanpos'][idx].astype(np.float32)
     chanori = grad[0,0]['chanori'][idx].astype(np.float32)
+    # pos: where each sensor is on the helmet and which direction it faces, shape (C, 6).
     pos = np.concatenate([chanpos, chanori], axis=1)
 
     pos[:, :3] -= pos[:, :3].mean(axis=0)
