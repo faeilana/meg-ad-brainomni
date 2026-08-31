@@ -1,0 +1,9 @@
+[19:18:15] combined fine-tune | model=tiny | device=mps
+[19:18:17] combined 309 subjects (OSF 148 + parcel 161) | AD 155 Control 154
+[19:18:17] proj_out (309, 16, 160, 256)
+[19:18:17] helpers ready
+[19:18:17] trainer ready
+[19:18:17] CV helper ready (fold-level checkpointing)
+[19:18:17] PROVENANCE seed=123 torch=2.12.0 backbone_lr=1e-05 head_lr=0.0001
+[19:18:17] PROVENANCE N=309 grouped_cv=False epochs={10: 400, 9: 200, 8: 200}
+[19:18:17] === 5-fold CV | last-1 block(s) | 400 epochs | 309 subjects ===

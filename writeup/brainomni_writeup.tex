@@ -1,0 +1,320 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+% Placeholder macro for numbers/text still to be filled in (e.g. after the seeded fine-tune run).
+\newcommand{\pending}[1]{\textcolor{red}{[#1]}}
+\newcommand{\todo}[1]{\textcolor{orange}{\textbf{TODO:} #1}}
+
+\title{Do MEG Foundation Models Already Encode Alzheimer's Disease?\\
+\large BrainOmni evaluation (draft --- BrainOmni portion)}
+\author{Fae \and Srikantan Nagarajan \\ \small (MEG-GPT portion by Sid, to be integrated)}
+\date{Draft \today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\todo{Write last, after Results are final and the MEG-GPT half is integrated.}
+We evaluate whether a self-supervised MEG foundation model, BrainOmni, implicitly encodes
+representations that distinguish Alzheimer's disease (AD) from cognitively healthy controls,
+without any disease-specific pretraining. On a 148-subject resting-state MEG cohort, frozen
+BrainOmni features classified AD at 0.831 accuracy (AUC 0.87), and task-specific fine-tuning of the
+last 1--3 transformer blocks did not improve on this (0.79--0.82 accuracy). Both were statistically
+indistinguishable, on overlapping 95\% bootstrap confidence intervals, from a simple six-feature
+handcrafted spectral/connectivity baseline (0.872 accuracy, AUC 0.93). Fine-tuning learning curves
+show rapid overfitting that worsens with depth, and BrainOmni remains on the rising portion of its
+sample-size learning curve. These results indicate that, on this cohort, the foundation model does
+not capture AD-discriminative structure beyond established domain features, and appears
+data/representation-limited rather than better or worse than handcrafted analysis.
+\end{abstract}
+
+\section{Introduction}
+\todo{Draft after Methods/Results. Key beats: (1) foundation models promise transfer with little
+downstream data; (2) MEG + AD context and the clinical stakes; (3) the open question --- do these
+models already encode disease-relevant structure without disease-specific training?; (4) our
+contribution: a careful, reproducible negative result on a real AD cohort, evaluating frozen and
+fine-tuned BrainOmni against a strong handcrafted baseline with proper uncertainty quantification.}
+
+\section{Methods}
+
+\subsection{Dataset and preprocessing}
+We use the resting-state MEG cohort of Kudo et al.\ \cite{kudo2023meg}, collected at UCSF:
+78 patients with Alzheimer's disease and 70 cognitively healthy controls ($N=148$), recorded on a
+whole-head gradiometer system ($\sim$271 channels) at 600\,Hz.
+
+Each recording was resampled to 256\,Hz using polyphase filtering (which applies an anti-aliasing
+low-pass), and each channel was $z$-normalized to zero mean and unit variance over the recording.
+Sensor positions and orientations were read from the gradiometer geometry to form a $(C,6)$ array
+per subject, mean-centered and scale-normalized; all channels were typed as gradiometers to match
+BrainOmni's sensor encoder. From each recording we extracted two non-overlapping 30-second segments
+(60\,s total), which are tokenized separately and averaged at the feature level (below). We applied
+no additional band-pass or notch filtering.
+\todo{Confirm with Sri whether the eLife recordings were already band-pass/notch filtered; BrainOmni's
+own preprocessing applies a 0.1--96\,Hz band-pass and 50/60\,Hz notch, which we did not repeat.}
+
+\subsection{Foundation model: BrainOmni}
+BrainOmni is a self-supervised transformer for neural time series, pretrained on
+$\sim$1{,}997\,h of EEG and $\sim$656\,h of MEG, none of it AD-specific. A learned BrainTokenizer
+maps arbitrary sensor montages to a fixed set of 16 ``neuro tokens'' per time window (via Perceiver
+queries), so the representation dimensionality is independent of the $\sim$271 input MEG channels.
+We evaluate two pretrained sizes with identical tokenizers and depth (12 transformer blocks):
+\textbf{tiny} (model width $256$) and \textbf{base} (model width $512$).
+
+\subsection{Frozen feature extraction}
+For frozen evaluation we reproduce the model's \texttt{encode} path: tokenize, add the learned
+neuro embeddings, project, pass through the transformer blocks, and $L_2$-normalize the final
+representation. Per subject we average over time windows and over the two segments, then flatten the
+16 tokens, yielding a feature vector of dimension $16\times256=4096$ (tiny) or $16\times512=8192$
+(base). These are the frozen features fed to a linear classifier.
+
+\subsection{Fine-tuning}
+For fine-tuning we unfreeze the last 1, 2, or 3 transformer blocks and attach a small classification
+head (Linear $\rightarrow$ ReLU $\rightarrow$ Dropout(0.3) $\rightarrow$ Linear). Following the
+model's official downstream recipe we use differential learning rates (pretrained backbone
+$1\times10^{-5}$, randomly initialized head $1\times10^{-4}$), AdamW (weight decay $0.05$,
+$\beta=(0.9,0.99)$), a warmup-cosine schedule (10\% warmup), label smoothing $0.1$, and gradient
+clipping at $1.0$, trained for 200 epochs with the reported weights taken from the epoch of lowest
+inner-validation loss.
+
+\subsection{Classification heads}
+The fine-tuned backbone is read out with two heads on identical features for a fair comparison:
+the jointly trained neural-network (NN) head, and a logistic-regression (LR) head fit on the
+extracted fine-tuned features. Frozen features are classified with LR.
+
+\subsection{Handcrafted baseline}
+As a domain baseline we use six features previously reported for this cohort: amplitude envelope
+correlation (AEC) and spectral power, each in the delta--theta, alpha, and beta bands, expressed as
+control-normative $z$-scores. We verified this baseline is robust to normalization: recomputing the
+$z$-scores within each training fold (no test-set leakage) reproduces the same accuracy.
+
+\subsection{Evaluation protocol}
+All methods are evaluated with nested stratified 5-fold cross-validation using a fixed seed (123),
+so every method sees identical folds. Within each training fold a 15\% inner-validation split is
+carved out for epoch selection; the held-out test fold is never used for selection (it is monitored
+only for diagnostic learning curves). We report accuracy and area under the ROC curve (AUC).
+Uncertainty is quantified by bootstrapping the 148 pooled out-of-fold predictions
+(2{,}000 resamples; 95\% percentile intervals). Network training is seeded (123) for reproducibility.
+Robustness of the linear-classifier choice is assessed with (i) a sweep of $\sim$23 classifiers and
+(ii) a PCA-dimensionality sweep (1--50 components, fit within each fold).
+
+\section{Results}
+
+\subsection{Frozen BrainOmni does not beat a handcrafted baseline}
+Table~\ref{tab:frozen} reports 5-fold CV performance. Frozen BrainOmni reached 0.831 accuracy for
+both model sizes, below the handcrafted baseline's 0.872. Interestingly, the larger \emph{base}
+model gave no accuracy gain over \emph{tiny} but a modest AUC gain (0.878 vs.\ 0.866), indicating the
+wider model improves ranking slightly without changing the operating-point accuracy.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+Method & Accuracy [95\% CI] & AUC [95\% CI] \\
+\hline
+\multicolumn{3}{|l|}{\textit{Handcrafted}} \\
+\hline
+\quad 6 features + LR              & \textbf{0.872} [0.817, 0.926] & \textbf{0.925} [0.876, 0.968] \\
+\hline
+\multicolumn{3}{|l|}{\textit{Frozen BrainOmni}} \\
+\hline
+\quad base + LR                    & 0.831 [0.764, 0.885] & 0.878 [0.817, 0.929] \\
+\hline
+\quad tiny + LR                    & 0.831 [0.770, 0.892] & 0.866 [0.802, 0.921] \\
+\hline
+\end{tabular}
+\caption{Frozen BrainOmni vs.\ the handcrafted baseline, 5-fold CV (seed 123, $N=148$), with
+95\% bootstrap confidence intervals (2{,}000 resamples of the pooled out-of-fold predictions).
+Confidence intervals overlap: frozen BrainOmni is not statistically distinguishable from
+handcrafted.}
+\label{tab:frozen}
+\end{table}
+
+\subsection{Fine-tuning does not help}
+Table~\ref{tab:finetune} reports the fine-tuned (last-1-block) results alongside the frozen and
+handcrafted numbers for reference. Fine-tuning the last 1--3 transformer blocks did \emph{not}
+improve over the frozen baseline. The best fine-tuned configuration (base, last-1 block) reached
+0.818 accuracy, still below both frozen (0.831) and handcrafted (0.872); the tiny model fine-tuned
+to only 0.791--0.797. Fine-tuning \emph{more} blocks did not help and if anything hurt slightly:
+across both models the ordering was monotone or flat in trainable depth (last-1 $\geq$ last-2
+$\geq$ last-3; e.g.\ tiny 0.790, 0.783, 0.777). Fine-tuning also did not degrade ranking (fine-tuned
+AUC 0.86--0.88, comparable to frozen), so the loss is at the operating point rather than in
+separability. These results are consistent with the limited number of training subjects (see
+Section~\ref{sec:datalimited}).
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+Method & Accuracy [95\% CI] & AUC [95\% CI] \\
+\hline
+\multicolumn{3}{|l|}{\textit{Reference (from Table~\ref{tab:frozen})}} \\
+\hline
+\quad \textit{Handcrafted + LR}     & \textit{0.872} [0.817, 0.926] & \textit{0.925} [0.876, 0.968] \\
+\hline
+\quad \textit{Frozen base + LR}     & \textit{0.831} [0.764, 0.885] & \textit{0.878} [0.817, 0.929] \\
+\hline
+\multicolumn{3}{|l|}{\textit{Fine-tuned BrainOmni (last-1 block)}} \\
+\hline
+\quad base + NN                    & 0.818 [0.757, 0.878] & 0.880 [0.819, 0.934] \\
+\hline
+\quad base + LR                    & 0.818 [0.750, 0.878] & 0.877 [0.815, 0.932] \\
+\hline
+\quad tiny + LR                    & 0.797 [0.736, 0.858] & 0.872 [0.808, 0.928] \\
+\hline
+\quad tiny + NN                    & 0.791 [0.723, 0.858] & 0.860 [0.797, 0.917] \\
+\hline
+\end{tabular}
+\caption{Fine-tuned BrainOmni (last-1 block), 5-fold CV (seed 123, $N=148$), with 95\% bootstrap
+confidence intervals. Reference rows (italicized) repeat the frozen and handcrafted numbers from
+Table~\ref{tab:frozen} for comparison. All confidence intervals overlap.}
+\label{tab:finetune}
+\end{table}
+
+Table~\ref{tab:depth} reports every fine-tuning depth. Accuracy is non-increasing with the number
+of trainable blocks in all four configurations, i.e.\ unfreezing more of the backbone never helped
+and in most cases hurt.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+Configuration & Last-1 & Last-2 & Last-3 \\
+\hline
+tiny + NN & 0.790 & 0.783 & 0.777 \\
+\hline
+tiny + LR & 0.797 & 0.790 & 0.777 \\
+\hline
+base + NN & 0.817 & 0.817 & 0.783 \\
+\hline
+base + LR & 0.817 & 0.817 & 0.790 \\
+\hline
+\end{tabular}
+\caption{Fine-tuning depth ablation: 5-fold CV accuracy (mean across folds) as a function of the
+number of unfrozen transformer blocks, seed 123, $N=148$. Confidence intervals are omitted here
+because the comparison of interest is the trend across depth rather than per-cell significance;
+see Table~\ref{tab:finetune} for intervals on the last-1 configuration.}
+\label{tab:depth}
+\end{table}
+
+\subsection{All methods are statistically indistinguishable}
+Bootstrap 95\% confidence intervals overlap across all seven methods (Figure~\ref{fig:bootstrap};
+Tables~\ref{tab:frozen} and \ref{tab:finetune}). Overlapping intervals are, however, only weak
+evidence of equivalence: two 95\% intervals can overlap while the difference between the methods is
+still significant. We therefore test each method directly against the handcrafted baseline with a
+\emph{paired} bootstrap, resampling subjects once per iteration and evaluating both methods on the
+same resample, so that the correlation induced by evaluating every method on identical subjects is
+accounted for.
+
+Table~\ref{tab:diff} reports these differences, using the last-1-block fine-tuned models: this is
+the best-performing depth (Table~\ref{tab:depth}), so the comparison is deliberately the most
+favorable one for fine-tuning, and the deeper configurations sit further below handcrafted still.
+Every interval contains zero, for both accuracy and AUC, so no BrainOmni configuration, frozen or
+fine-tuned, is statistically distinguishable from six handcrafted spectral/connectivity features.
+The wide intervals are a direct consequence of the small
+cohort ($N=148$): the data can resolve that all methods lie in the same $\sim$0.79--0.87 band, but
+not finer differences between them. The honest conclusion is therefore not that any method ``wins,''
+but that a general-purpose MEG foundation model is \emph{statistically tied with} an established
+domain baseline on this task.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+Method & $\Delta$ Accuracy vs handcrafted & $\Delta$ AUC vs handcrafted \\
+\hline
+Frozen base + LR      & \pending{$-$0.000 [$-$0.000, $+$0.000]} & \pending{---} \\
+\hline
+Frozen tiny + LR      & \pending{---} & \pending{---} \\
+\hline
+Fine-tuned base + NN  & \pending{---} & \pending{---} \\
+\hline
+Fine-tuned base + LR  & \pending{---} & \pending{---} \\
+\hline
+Fine-tuned tiny + LR  & \pending{---} & \pending{---} \\
+\hline
+Fine-tuned tiny + NN  & \pending{---} & \pending{---} \\
+\hline
+\end{tabular}
+\caption{Paired bootstrap differences relative to the handcrafted baseline (2{,}000 resamples,
+$N=148$, 95\% intervals); negative values indicate performance below handcrafted. Both methods are
+evaluated on the same resampled subjects at each iteration. An interval containing zero indicates no
+statistically detectable difference. Fine-tuned rows use the last-1-block configuration, the
+best-performing depth (Table~\ref{tab:depth}), so these comparisons are the most favorable case for
+fine-tuning.}
+\label{tab:diff}
+\end{table}
+\todo{Fill from the final cell of \texttt{04\_bootstrap\_ci.ipynb}, which prints these rows in
+LaTeX form ready to paste.}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{bootstrap_comparison.png}
+\caption{AD vs.\ control: all seven methods with 95\% bootstrap confidence intervals for accuracy
+(left) and AUC (right), 5-fold CV, $N=148$; fine-tune rows use the last-1 block. Red = handcrafted,
+green = frozen BrainOmni, blue = fine-tuned BrainOmni. The intervals overlap across all methods.}
+\label{fig:bootstrap}
+\end{figure}
+\todo{Upload \texttt{results\_withseed/bootstrap\_comparison.png} to the Overleaf project (or adjust
+the path). Same for the learning-curve figures below.}
+
+\subsection{The result is robust to classifier and dimensionality}
+Across $\sim$23 classifiers, logistic regression was the best or tied-best readout of the frozen
+features; no classifier robustly outperformed it, and the few that peaked higher did so within
+bootstrap noise and only at specific dimensionalities. Accuracy was flat across PCA settings
+(1--50 components as well as full dimensionality), confirming the choice of a linear readout and
+dimensionality is not driving the result.
+
+\subsection{BrainOmni is data-limited on this task}
+\label{sec:datalimited}
+Two lines of evidence indicate the bottleneck is data, not optimization. First, the fine-tuning
+learning curves (Figure~\ref{fig:curves}) show clear overfitting: training loss falls toward its
+floor while the held-out and inner-validation losses \emph{rise} after roughly epoch 25--50, and the
+effect worsens with fine-tuning depth (the last-3-block configuration overfits fastest). The
+reported accuracies use the best inner-validation epoch, so they are not the overfit endpoint; the
+curves are diagnostic. Second, a sample-size learning curve (accuracy vs.\ number of training
+subjects) shows the handcrafted baseline saturating early while frozen BrainOmni is still rising at
+the full cohort size, i.e.\ on the steep, data-hungry portion of its curve rather than at a plateau.
+Together these suggest that 148 subjects is too few to adapt the pretrained backbone: fine-tuning
+simply memorizes the training fold.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{nn_curves_cv_base.png}
+\caption{5-fold CV learning curves (mean $\pm$1 std across folds), NN head, BrainOmni-base. Top:
+accuracy; bottom: loss. Train (blue), inner validation used for epoch selection (orange), held-out
+test fold logged for diagnosis only (green). Training loss falls toward its floor while held-out and
+validation losses rise, overfitting that worsens from last-1 (left) to last-3 (right).}
+\label{fig:curves}
+\end{figure}
+\todo{Optionally add the sample-size learning curve (\texttt{learning\_curve\_samplesize.png}) as a
+second panel; it shows frozen BrainOmni still rising at $N=118$ while handcrafted saturates.}
+
+\section{Discussion}
+On this 148-subject cohort, a general-purpose MEG foundation model shows no advantage over six
+handcrafted spectral/connectivity features for AD classification, whether used frozen or fine-tuned,
+and remains data-limited. Two explanations are consistent with these observations and cannot be
+fully separated here: the pretrained representation may not encode AD-specific structure
+(a representation gap, since pretraining was not disease-specific), or 148 subjects may be too few
+to surface or adapt it (a data limit). The still-rising learning curve favors the latter, while the
+persistent tie even at full data is consistent with the former. Either way, the promise of strong
+AD detection with minimal task data is not realized here.
+\paragraph{Limitations.} A single cohort ($N=148$) and one dataset limit generalizability, and the
+wide confidence intervals reflect that sample size. Our preprocessing applied no explicit band-pass
+or notch filtering beyond the resample's anti-aliasing low-pass, so low-frequency drift and 50/60\,Hz
+line noise were not removed; whether this affects the foundation-model features is a robustness
+question worth checking. \todo{Confirm the filtering point with Sri (was the eLife data pre-filtered?)
+and, if feasible, report a with/without-filter robustness check for the frozen features.}
+\todo{Integrate the MEG-GPT half (Sid): two foundation models tying with / underperforming handcrafted
+would strengthen the negative result across architectures.}
+
+\section*{Reproducibility}
+All experiments use a fixed seed (123) and a numbered, self-contained notebook pipeline
+(\texttt{notebooks\_withseed/00--07}), from frozen-feature extraction through fine-tuning, bootstrap
+inference, and robustness sweeps. \todo{Add repository link.}
+
+\end{document}

@@ -1,0 +1,42 @@
+[14:06:19] === tiny run started, logging to ../results_withseed/train_log_tiny.txt ===
+[14:06:20] PROVENANCE seed=123 device=mps torch=2.12.0 git=e596f5b
+[14:06:20] PROVENANCE epochs_by_nf={10: 400, 9: 200, 8: 200} backbone_lr=1e-05 head_lr=0.0001
+[14:06:20] === NN head | 80/10/10 | last 1 block(s) | 400 epochs ===
+[14:18:09]    best epoch 269 | test 0.733
+[14:18:09] === NN head | 80/10/10 | last 2 block(s) | 200 epochs ===
+[14:29:14]    best epoch 23 | test 0.867
+[14:29:14] === NN head | 80/10/10 | last 3 block(s) | 200 epochs ===
+[14:45:36]    best epoch 24 | test 0.800
+[14:45:36] === NN head | 70/15/15 | last 1 block(s) | 400 epochs ===
+[14:56:34]    best epoch 36 | test 0.826
+[14:56:34] === NN head | 70/15/15 | last 2 block(s) | 200 epochs ===
+[15:06:50]    best epoch 21 | test 0.826
+[15:06:50] === NN head | 70/15/15 | last 3 block(s) | 200 epochs ===
+[15:21:44]    best epoch 17 | test 0.870
+[15:21:44] PROVENANCE seed=123 device=mps torch=2.12.0 git=e596f5b
+[15:21:44] PROVENANCE epochs_by_nf={10: 400, 9: 200, 8: 200} backbone_lr=1e-05 head_lr=0.0001
+[15:21:44] === 5-fold CV | last 1 block(s) | 400 epochs ===
+[15:32:37]   n_frozen=10 fold 1: best_ep 81 | NN 0.633 | LR 0.633
+[15:43:28]   n_frozen=10 fold 2: best_ep 117 | NN 0.900 | LR 0.933
+[15:54:18]   n_frozen=10 fold 3: best_ep 126 | NN 0.900 | LR 0.900
+[16:18:31]   n_frozen=10 fold 4: best_ep 248 | NN 0.759 | LR 0.793
+[16:36:33]   n_frozen=10 fold 5: best_ep 98 | NN 0.759 | LR 0.724
+[16:36:33]    NN mean 0.790 | LR mean 0.797 | 74.8 min
+[16:36:33]    checkpoint saved -> finetune_shared.pt [10]
+[16:36:33] === 5-fold CV | last 2 block(s) | 200 epochs ===
+[16:47:49]   n_frozen=9 fold 1: best_ep 46 | NN 0.567 | LR 0.633
+[16:57:55]   n_frozen=9 fold 2: best_ep 47 | NN 0.900 | LR 0.933
+[17:40:56]   n_frozen=9 fold 3: best_ep 39 | NN 0.933 | LR 0.900
+[18:09:08]   n_frozen=9 fold 4: best_ep 70 | NN 0.724 | LR 0.724
+[18:52:25]   n_frozen=9 fold 5: best_ep 48 | NN 0.793 | LR 0.759
+[18:52:25]    NN mean 0.783 | LR mean 0.790 | 135.9 min
+[18:52:25]    checkpoint saved -> finetune_shared.pt [9, 10]
+[18:52:25] === 5-fold CV | last 3 block(s) | 200 epochs ===
+[19:06:58]   n_frozen=8 fold 1: best_ep 28 | NN 0.600 | LR 0.600
+[20:04:45]   n_frozen=8 fold 2: best_ep 42 | NN 0.867 | LR 0.900
+[20:19:17]   n_frozen=8 fold 3: best_ep 21 | NN 0.900 | LR 0.900
+[20:49:23]   n_frozen=8 fold 4: best_ep 49 | NN 0.724 | LR 0.724
+[23:10:15]   n_frozen=8 fold 5: best_ep 25 | NN 0.793 | LR 0.759
+[23:10:15]    NN mean 0.777 | LR mean 0.777 | 257.8 min
+[23:10:15]    checkpoint saved -> finetune_shared.pt [8, 9, 10]
+[23:10:15] === CV complete | last1:0.790 | last2:0.783 | last3:0.777 ===
