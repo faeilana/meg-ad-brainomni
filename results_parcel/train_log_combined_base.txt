@@ -1,0 +1,40 @@
+[01:35:48] combined fine-tune | model=base | device=mps
+[01:35:52] combined 309 subjects (OSF 148 + parcel 161) | AD 155 Control 154
+[01:35:52] proj_out (309, 16, 160, 512)
+[01:35:52] helpers ready
+[01:35:52] trainer ready
+[01:35:52] CV helper ready (fold-level checkpointing)
+[01:35:52] PROVENANCE seed=123 torch=2.12.0 backbone_lr=1e-05 head_lr=0.0001
+[01:35:52] PROVENANCE N=309 grouped_cv=False epochs={10: 400, 9: 200, 8: 200}
+[01:35:52] === 5-fold CV | last-1 block(s) | 400 epochs | 309 subjects ===
+[06:19:12]   n_frozen=10 fold 1/5: best_ep 44 | NN 0.774 | LR 0.806 | checkpointed
+[10:26:25]   n_frozen=10 fold 2/5: best_ep 40 | NN 0.855 | LR 0.855 | checkpointed
+[14:44:32]   n_frozen=10 fold 3/5: best_ep 21 | NN 0.871 | LR 0.855 | checkpointed
+[16:41:28]   n_frozen=10 fold 4/5: best_ep 23 | NN 0.855 | LR 0.855 | checkpointed
+[17:51:49]   n_frozen=10 fold 5/5: best_ep 86 | NN 0.852 | LR 0.820 | checkpointed
+[17:51:49]    NN mean 0.841 | LR mean 0.838 | 976.0 min
+[17:51:49]    config complete, saved -> finetune_combined_base.pt
+[17:51:49] === 5-fold CV | last-2 block(s) | 200 epochs | 309 subjects ===
+[20:06:46]   n_frozen=9 fold 1/5: best_ep 25 | NN 0.790 | LR 0.806 | checkpointed
+[04:21:10]   n_frozen=9 fold 2/5: best_ep 23 | NN 0.839 | LR 0.839 | checkpointed
+[07:02:03]   n_frozen=9 fold 3/5: best_ep 12 | NN 0.839 | LR 0.855 | checkpointed
+[12:19:07]   n_frozen=9 fold 4/5: best_ep 15 | NN 0.839 | LR 0.871 | checkpointed
+[15:59:20]   n_frozen=9 fold 5/5: best_ep 57 | NN 0.836 | LR 0.770 | checkpointed
+[15:59:21]    NN mean 0.829 | LR mean 0.828 | 1327.5 min
+[15:59:21]    config complete, saved -> finetune_combined_base.pt
+[15:59:21] === 5-fold CV | last-3 block(s) | 200 epochs | 309 subjects ===
+[17:29:48]   n_frozen=8 fold 1/5: best_ep 129 | NN 0.806 | LR 0.774 | checkpointed
+[19:02:06]   n_frozen=8 fold 2/5: best_ep 15 | NN 0.855 | LR 0.839 | checkpointed
+[22:13:22] configs already complete: [9, 10]
+[22:13:22] PROVENANCE seed=123 torch=2.12.0 backbone_lr=1e-05 head_lr=0.0001
+[22:13:22] PROVENANCE N=309 grouped_cv=False epochs={10: 400, 9: 200, 8: 200}
+[22:13:22] === last-1 block(s): SKIP (complete) ===
+[22:13:22] === last-2 block(s): SKIP (complete) ===
+[22:13:22] === 5-fold CV | last-3 block(s) | 200 epochs | 309 subjects ===
+[22:13:22]   resuming last-3: folds [0, 1] already done
+[23:41:05]   n_frozen=8 fold 3/5: best_ep 50 | NN 0.823 | LR 0.823 | checkpointed
+[02:07:40]   n_frozen=8 fold 4/5: best_ep 9 | NN 0.839 | LR 0.871 | checkpointed
+[05:36:21]   n_frozen=8 fold 5/5: best_ep 32 | NN 0.852 | LR 0.836 | checkpointed
+[05:36:22]    NN mean 0.835 | LR mean 0.829 | 443.0 min
+[05:36:22]    config complete, saved -> finetune_combined_base.pt
+[05:36:22] === done ===

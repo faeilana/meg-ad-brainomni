@@ -7,3 +7,53 @@
 [19:18:17] PROVENANCE seed=123 torch=2.12.0 backbone_lr=1e-05 head_lr=0.0001
 [19:18:17] PROVENANCE N=309 grouped_cv=False epochs={10: 400, 9: 200, 8: 200}
 [19:18:17] === 5-fold CV | last-1 block(s) | 400 epochs | 309 subjects ===
+[19:47:06] combined fine-tune | model=tiny | device=mps
+[19:47:08] combined 309 subjects (OSF 148 + parcel 161) | AD 155 Control 154
+[19:47:08] proj_out (309, 16, 160, 256)
+[19:47:08] helpers ready
+[19:47:08] trainer ready
+[19:47:08] CV helper ready (fold-level checkpointing)
+[19:47:08] PROVENANCE seed=123 torch=2.12.0 backbone_lr=1e-05 head_lr=0.0001
+[19:47:08] PROVENANCE N=309 grouped_cv=False epochs={10: 400, 9: 200, 8: 200}
+[19:47:08] === 5-fold CV | last-1 block(s) | 400 epochs | 309 subjects ===
+[20:10:42]   n_frozen=10 fold 1/5: best_ep 62 | NN 0.758 | LR 0.790 | checkpointed
+[20:34:16]   n_frozen=10 fold 2/5: best_ep 98 | NN 0.871 | LR 0.839 | checkpointed
+[20:56:59]   n_frozen=10 fold 3/5: best_ep 37 | NN 0.871 | LR 0.839 | checkpointed
+[21:19:49]   n_frozen=10 fold 4/5: best_ep 149 | NN 0.903 | LR 0.887 | checkpointed
+[21:43:44]   n_frozen=10 fold 5/5: best_ep 312 | NN 0.820 | LR 0.836 | checkpointed
+[21:43:44]    NN mean 0.845 | LR mean 0.838 | 116.6 min
+[21:43:44]    config complete, saved -> finetune_combined_tiny.pt
+[21:43:44] === done ===
+[12:29:31] combined fine-tune | model=tiny | device=mps
+[12:29:33] combined 309 subjects (OSF 148 + parcel 161) | AD 155 Control 154
+[12:29:33] proj_out (309, 16, 160, 256)
+[12:29:33] helpers ready
+[12:29:33] trainer ready
+[12:29:33] CV helper ready (fold-level checkpointing)
+[12:29:33] configs already complete: [10]
+[12:29:33] PROVENANCE seed=123 torch=2.12.0 backbone_lr=1e-05 head_lr=0.0001
+[12:29:33] PROVENANCE N=309 grouped_cv=False epochs={10: 400, 9: 200, 8: 200}
+[12:29:33] === last-1 block(s): SKIP (complete) ===
+[12:29:33] === 5-fold CV | last-2 block(s) | 200 epochs | 309 subjects ===
+[12:50:43]   n_frozen=9 fold 1/5: best_ep 70 | NN 0.758 | LR 0.790 | checkpointed
+[18:36:40] configs already complete: [10]
+[18:36:40] PROVENANCE seed=123 torch=2.12.0 backbone_lr=1e-05 head_lr=0.0001
+[18:36:40] PROVENANCE N=309 grouped_cv=False epochs={10: 400, 9: 200, 8: 200}
+[18:36:40] === last-1 block(s): SKIP (complete) ===
+[18:36:40] === 5-fold CV | last-2 block(s) | 200 epochs | 309 subjects ===
+[18:36:40]   resuming last-2: folds [0] already done
+[18:58:36]   n_frozen=9 fold 2/5: best_ep 35 | NN 0.855 | LR 0.839 | checkpointed
+[19:19:59]   n_frozen=9 fold 3/5: best_ep 22 | NN 0.839 | LR 0.855 | checkpointed
+[19:41:16]   n_frozen=9 fold 4/5: best_ep 16 | NN 0.839 | LR 0.903 | checkpointed
+[20:02:43]   n_frozen=9 fold 5/5: best_ep 72 | NN 0.836 | LR 0.852 | checkpointed
+[20:02:43]    NN mean 0.825 | LR mean 0.848 | 86.0 min
+[20:02:43]    config complete, saved -> finetune_combined_tiny.pt
+[20:02:43] === 5-fold CV | last-3 block(s) | 200 epochs | 309 subjects ===
+[20:33:59]   n_frozen=8 fold 1/5: best_ep 45 | NN 0.758 | LR 0.774 | checkpointed
+[21:17:13]   n_frozen=8 fold 2/5: best_ep 44 | NN 0.871 | LR 0.855 | checkpointed
+[21:49:05]   n_frozen=8 fold 3/5: best_ep 26 | NN 0.855 | LR 0.855 | checkpointed
+[22:20:44]   n_frozen=8 fold 4/5: best_ep 14 | NN 0.887 | LR 0.903 | checkpointed
+[02:52:00]   n_frozen=8 fold 5/5: best_ep 48 | NN 0.787 | LR 0.836 | checkpointed
+[02:52:00]    NN mean 0.832 | LR mean 0.845 | 409.3 min
+[02:52:00]    config complete, saved -> finetune_combined_tiny.pt
+[02:52:00] === done ===
