@@ -30,7 +30,7 @@ def preprocess_subject(mat_path):
     # pos: where each sensor is on the helmet and which direction it faces, shape (C, 6).
     pos = np.concatenate([chanpos, chanori], axis=1)
 
-    pos[:, :3] -= pos[:, :3].mean(axis=0)
+    pos[:, :3] -= pos[:, :3].mean(axis=0) # centers
     scale = np.sqrt(3 * np.mean(np.sum(pos[:, :3] ** 2, axis=1)))
     pos[:, :3] /= (scale + 1e-8)
 
